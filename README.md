@@ -77,7 +77,7 @@ curl http://localhost:8080/actuator/health
 
 ## Empirical Benchmark Results
 
-Tested on AMD Ryzen 7 / 16 GB RAM / Windows 11 / OpenJDK 17 LTS:
+Tested on AMD Ryzen 5 5600H (6 cores, 12 threads) / 12 GB RAM / Windows 11 (64-bit) / OpenJDK 17 LTS:
 
 | Test / Metric | Target Ceiling | Measured Result | Status |
 |---|---|---|:---:|
