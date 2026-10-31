@@ -1,0 +1,189 @@
+{
+	"info": {
+		"_postman_id": "moveinsync-config-api-tests",
+		"name": "MoveInSync Tenant Config Service API Tests",
+		"description": "Full end-to-end API test collection for MoveInSync Hierarchical Tenant Config Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Health & Actuator Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/actuator/health",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["actuator", "health"]
+				}
+			}
+		},
+		{
+			"name": "2. Get Current Version",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/version",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "version"]
+				}
+			}
+		},
+		{
+			"name": "3. Register Duration Schema (Admin)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "X-User-Role", "value": "ADMIN" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"key\": \"booking.cutoff.minutes\",\n  \"dataType\": \"DURATION\",\n  \"description\": \"Cutoff time in minutes before departure\",\n  \"globalDefault\": 60,\n  \"minValue\": 5,\n  \"maxValue\": 360\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/definitions",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "definitions"]
+				}
+			}
+		},
+		{
+			"name": "4. Register Time Window Schema (Admin)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "X-User-Role", "value": "ADMIN" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"key\": \"night.safety.window\",\n  \"dataType\": \"TIME_WINDOW\",\n  \"description\": \"Night safety window for escorts\",\n  \"globalDefault\": {\n    \"start\": \"20:00\",\n    \"end\": \"06:00\"\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/definitions",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "definitions"]
+				}
+			}
+		},
+		{
+			"name": "5. Commit Valid ChangeSet (Operator)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "X-Tenant-Id", "value": "Google" },
+					{ "key": "X-User-Role", "value": "OPERATOR" },
+					{ "key": "X-User-Id", "value": "ops-lead" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"author\": \"ops-lead\",\n  \"reason\": \"Tighten cutoff for Bengaluru office to 30 mins\",\n  \"updates\": [\n    {\n      \"scopeKey\": {\n        \"level\": \"OFFICE\",\n        \"clientId\": \"Google\",\n        \"officeId\": \"Bengaluru\"\n      },\n      \"key\": \"booking.cutoff.minutes\",\n      \"value\": 30\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/changeset",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "changeset"]
+				}
+			}
+		},
+		{
+			"name": "6. Test Pre-Commit Rejection (Negative Cutoff)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "X-Tenant-Id", "value": "Google" },
+					{ "key": "X-User-Role", "value": "OPERATOR" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"author\": \"bad-actor\",\n  \"reason\": \"invalid negative cutoff\",\n  \"updates\": [\n    {\n      \"scopeKey\": {\n        \"level\": \"OFFICE\",\n        \"clientId\": \"Google\",\n        \"officeId\": \"Bengaluru\"\n      },\n      \"key\": \"booking.cutoff.minutes\",\n      \"value\": -30\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/changeset",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "changeset"]
+				}
+			}
+		},
+		{
+			"name": "7. Test Tenant Isolation Violation (Google operator modifying Amazon)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "X-Tenant-Id", "value": "Google" },
+					{ "key": "X-User-Role", "value": "OPERATOR" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"author\": \"google-op\",\n  \"reason\": \"cross tenant attack\",\n  \"updates\": [\n    {\n      \"scopeKey\": {\n        \"level\": \"OFFICE\",\n        \"clientId\": \"Amazon\",\n        \"officeId\": \"Bengaluru\"\n      },\n      \"key\": \"booking.cutoff.minutes\",\n      \"value\": 45\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/changeset",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "changeset"]
+				}
+			}
+		},
+		{
+			"name": "8. Explain Mode Resolution",
+			"request": {
+				"method": "GET",
+				"header": [
+					{ "key": "X-Tenant-Id", "value": "Google" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/explain?key=booking.cutoff.minutes&clientId=Google&officeId=Bengaluru",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "explain"],
+					"query": [
+						{ "key": "key", "value": "booking.cutoff.minutes" },
+						{ "key": "clientId", "value": "Google" },
+						{ "key": "officeId", "value": "Bengaluru" }
+					]
+				}
+			}
+		},
+		{
+			"name": "9. Instant Rollback with Diff (Admin)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "X-User-Role", "value": "ADMIN" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/configs/rollback?targetVersion=0&author=admin&reason=emergency-rollback",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8080",
+					"path": ["api", "v1", "configs", "rollback"],
+					"query": [
+						{ "key": "targetVersion", "value": "0" },
+						{ "key": "author", "value": "admin" },
+						{ "key": "reason", "value": "emergency-rollback" }
+					]
+				}
+			}
+		}
+	]
+}
