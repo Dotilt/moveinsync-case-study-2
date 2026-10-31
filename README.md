@@ -60,13 +60,15 @@ cd tenant-config-service
 ```
 *(On Linux/macOS: `./mvnw test`)*
 
-### 2. Run with Docker (One-Command Startup)
+### 2. Run with Docker (Recommended - Zero Dependencies Required)
+No local Maven or Java installation is required. Docker uses an autonomous multi-stage build (`maven:3.9.6-eclipse-temurin-17` builder + `eclipse-temurin:17-jre` runtime) to compile, package, and launch the service:
+
 From the repository root:
 
 ```bash
 docker compose up --build
 ```
-The server will start at `http://localhost:8080`.
+The server will build, start, and listen at `http://localhost:8080`.
 
 Verify health:
 ```bash
@@ -93,7 +95,13 @@ Tested on AMD Ryzen 5 5600H (6 cores, 12 threads) / 12 GB RAM / Windows 11 (64-b
 
 ## How to Test the Live Server (REST API)
 
-Start the server:
+### Option A: Run via Docker (No build step required)
+```bash
+docker compose up --build
+```
+
+### Option B: Run locally via Java Jar
+If you prefer running without Docker, build the JAR first with `.\mvnw.cmd clean package -DskipTests`:
 ```powershell
 cd tenant-config-service
 java -jar config-server\target\config-server-1.0.0-SNAPSHOT.jar
