@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
   config-server:
     build:
       context: ./tenant-config-service
       dockerfile: Dockerfile
     image: moveinsync/tenant-config-service:1.0.0
-    container_name: moveinsync-config-server
     ports:
       - "8080:8080"
     environment:
