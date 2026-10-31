@@ -42,9 +42,9 @@ public class ConfigAdminController {
 
     @PostMapping("/rollback")
     public ResponseEntity<ConfigManagementService.RollbackResult> rollback(
-            @RequestParam long targetVersion,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false) String reason) {
+            @RequestParam("targetVersion") long targetVersion,
+            @RequestParam(value = "author", required = false) String author,
+            @RequestParam(value = "reason", required = false) String reason) {
         ConfigManagementService.RollbackResult result = service.rollbackToVersion(targetVersion, author, reason);
         return ResponseEntity.ok(result);
     }

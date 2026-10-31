@@ -53,10 +53,10 @@ public class ConfigQueryController {
 
     @GetMapping("/explain")
     public ExplainResult explain(
-            @RequestParam String key,
-            @RequestParam(required = false) String clientId,
-            @RequestParam(required = false) String officeId,
-            @RequestParam(required = false) String shiftId) {
+            @RequestParam("key") String key,
+            @RequestParam(value = "clientId", required = false) String clientId,
+            @RequestParam(value = "officeId", required = false) String officeId,
+            @RequestParam(value = "shiftId", required = false) String shiftId) {
 
         ScopeKey scope;
         if (shiftId != null && officeId != null && clientId != null) {

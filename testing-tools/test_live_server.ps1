@@ -27,22 +27,37 @@ function Test-Endpoint {
             Method = $Method
             Headers = $Headers
             ErrorAction = "Stop"
+            UseBasicParsing = $true
         }
         if ($Body) {
             $params["Body"] = $Body
             $params["ContentType"] = "application/json"
         }
 
-        $response = Invoke-RestMethod @params -ResponseHeadersVariable respHeaders -StatusCodeVariable statusCode
+        $rawResponse = Invoke-WebRequest @params
+        $statusCode = [int]$rawResponse.StatusCode
+        $content = $rawResponse.Content
+        if ($content -is [byte[]]) {
+            $content = [System.Text.Encoding]::UTF8.GetString($content)
+        }
+        $response = $null
+        if ($content) {
+            try { $response = $content | ConvertFrom-Json } catch { $response = $content }
+        }
         
         if ($statusCode -eq $ExpectedStatusCode) {
             if ($ValidationBlock) {
-                $customPass = & $ValidationBlock $response
+                $customPass = $false
+                try {
+                    $customPass = & $ValidationBlock $response
+                } catch {
+                    $customPass = $false
+                }
                 if ($customPass) {
                     Write-Host " [PASS] (Status: $statusCode)" -ForegroundColor Green
                     $script:passedTests++
                 } else {
-                    Write-Host " [FAILED] (Assertion check failed)" -ForegroundColor Red
+                    Write-Host " [FAILED] (Assertion check failed: raw content: '$content')" -ForegroundColor Red
                 }
             } else {
                 Write-Host " [PASS] (Status: $statusCode)" -ForegroundColor Green
@@ -52,7 +67,10 @@ function Test-Endpoint {
             Write-Host " [FAILED] (Expected $ExpectedStatusCode, got $statusCode)" -ForegroundColor Red
         }
     } catch {
-        $actualCode = $_.Exception.Response.StatusCode.value__
+        $actualCode = $null
+        if ($_.Exception.Response) {
+            $actualCode = [int]$_.Exception.Response.StatusCode
+        }
         if ($actualCode -eq $ExpectedStatusCode) {
             Write-Host " [PASS] (Expected error correctly returned: $actualCode)" -ForegroundColor Green
             $script:passedTests++
