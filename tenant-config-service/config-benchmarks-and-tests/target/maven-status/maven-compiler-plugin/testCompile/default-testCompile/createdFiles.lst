@@ -1,0 +1,7 @@
+com\moveinsync\config\test\benchmark\LocalReadBenchmarkTest.class
+com\moveinsync\config\test\failure\KillTheServerTest$FailableSyncClient.class
+com\moveinsync\config\test\concurrency\AtomicChangeConcurrencyTest.class
+com\moveinsync\config\test\benchmark\LivePropagation200ClientsTest$MockCentralBroker.class
+com\moveinsync\config\test\benchmark\LivePropagation200ClientsTest.class
+com\moveinsync\config\test\benchmark\LivePropagation200ClientsTest$ClientBrokerAdapter.class
+com\moveinsync\config\test\failure\KillTheServerTest.class
